@@ -34,10 +34,12 @@ jobs:
           fetch-depth: 1
 
       - name: Increment version
+        env:
+          BUMP_TYPE: ${{ github.event.inputs.bump }}
         run: |
           CURRENT_VERSION=$(cat .version | xargs)
           IFS='.' read -r major minor patch <<< "$CURRENT_VERSION"
-          case "$1" in
+          case "$BUMP_TYPE" in
           patch)
               patch=$((patch + 1))
               ;;
