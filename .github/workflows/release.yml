@@ -1,0 +1,81 @@
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      bump:
+        description: Type of version bump
+        required: true
+        default: patch
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+
+env:
+  REGISTRY_REPO: alpoi/typst-packages
+  PACKAGE_NAME: kiresume
+  PATH_PREFIX: packages/preview
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Release
+    runs-on: ubuntu-latest
+    outputs:
+      new_version: ${{ steps.set_version.outputs.new_version }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          ref: main
+          fetch-depth: 1
+
+      - name: Increment version
+        run: |
+          read -r CURRENT_VERSION < .version
+          IFS='.' read -r major minor patch <<< "$CURRENT_VERSION"
+          case "$1" in
+          patch)
+              patch=$((patch + 1))
+              ;;
+          minor)
+              minor=$((minor + 1))
+              patch=0
+              ;;
+          major)
+              major=$((major + 1))
+              minor=0
+              patch=0
+              ;;
+          esac
+          NEW_VERSION="$major.$minor.$patch"
+          echo "NEW_VERSION=$NEW_VERSION" >> $GITHUB_ENV
+          sed -i "s|$CURRENT_VERSION|$NEW_VERSION|" .version
+          sed -i "s|ref=v$CURRENT_VERSION|ref=v$NEW_VERSION|" README.md
+
+      - name: Set version output
+        id: set_version
+        run: echo "new_version=${NEW_VERSION}" >> $GITHUB_OUTPUT
+
+      - name: Commit and tag changes
+        run: |
+          git config --global user.name "alpoi"
+          git config --global user.email "me@angus.buzz"
+          git add .
+          git commit -m "🚀 $NEW_VERSION"
+          git push origin main
+          git tag -a "v$NEW_VERSION" -m "🚀 $NEW_VERSION"
+          git push origin "v$NEW_VERSION"
+
+      - name: Release
+        uses: softprops/action-gh-release@v3
+        with:
+          tag_name: "v${{ env.NEW_VERSION }}"
