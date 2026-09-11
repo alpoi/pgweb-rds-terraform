@@ -35,7 +35,7 @@ jobs:
 
       - name: Increment version
         run: |
-          read -r CURRENT_VERSION < .version
+          CURRENT_VERSION=$(cat .version | xargs)
           IFS='.' read -r major minor patch <<< "$CURRENT_VERSION"
           case "$1" in
           patch)
