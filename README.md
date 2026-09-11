@@ -14,7 +14,7 @@ existing RDS Postgres instance.
 
 ```hcl
 module "pgweb" {
-  source = "git::https://github.com/alpoi/pgweb-rds-terraform?ref=v0.0.0"
+  source = "git::https://github.com/alpoi/pgweb-rds-terraform?ref=v1.0.0"
 
   vpc_id                 = module.vpc.vpc_id
   rds_security_group_id  = module.rds.db_instance_security_group_id
