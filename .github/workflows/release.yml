@@ -13,11 +13,6 @@ on:
           - minor
           - major
 
-env:
-  REGISTRY_REPO: alpoi/typst-packages
-  PACKAGE_NAME: kiresume
-  PATH_PREFIX: packages/preview
-
 concurrency:
   group: release
   cancel-in-progress: false
